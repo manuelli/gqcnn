@@ -259,7 +259,7 @@ if __name__ == '__main__':
         if config_filename is None:
                 config_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                '..',
-                                               'cfg/tools/training.yaml')
+                                               'cfg/tools/training_lucas.yaml')
 
         # open config file
 	train_config = YamlConfig(config_filename)

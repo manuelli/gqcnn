@@ -915,6 +915,7 @@ class SGDOptimizer(object):
 		logging.info('Saving model to %s' %(self.experiment_dir))
 
 		# setup filter directory
+		# what currently gets stored in the filter dir?
 		self.filter_dir = os.path.join(self.experiment_dir, 'filters')
 		if not os.path.exists(self.filter_dir):
 			os.mkdir(self.filter_dir)
@@ -1021,6 +1022,7 @@ class SGDOptimizer(object):
 				file_num = np.random.choice(len(self.im_filenames_copy), size=1)[0]
 				train_data_filename = self.im_filenames_copy[file_num]
 
+				# ok there are many grasps stored in a single filename
 				self.train_data_arr = np.load(os.path.join(self.data_dir, train_data_filename))[
 										 'arr_0'].astype(np.float32)
 				self.train_poses_arr = np.load(os.path.join(self.data_dir, self.pose_filenames_copy[file_num]))[
@@ -1053,7 +1055,8 @@ class SGDOptimizer(object):
 				self.train_data_arr = (self.train_data_arr - self.data_mean) / self.data_std
 				self.train_poses_arr = (self.train_poses_arr - self.pose_mean) / self.pose_std
 		
-				# normalize labels
+				# normalize labels, depending on whether we are doing CLASSIFICATION or
+				# REGRESSION
 				if self.training_mode == TrainingMode.REGRESSION:
 					if self.preproc_mode == PreprocMode.NORMALIZATION:
 						self.train_label_arr = (self.train_label_arr - self.min_metric) / (self.max_metric - self.min_metric)
@@ -1062,6 +1065,8 @@ class SGDOptimizer(object):
 					self.train_label_arr = self.train_label_arr.astype(self.numpy_dtype)
 
 				# enqueue training data batch
+
+				# first copy it over to some temporary data structures
 				train_data[start_i:end_i, ...] = np.copy(self.train_data_arr)
 				train_poses[start_i:end_i,:] = self._read_pose_data(np.copy(self.train_poses_arr), self.input_data_mode)
 				label_data[start_i:end_i] = np.copy(self.train_label_arr)

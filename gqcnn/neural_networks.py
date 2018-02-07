@@ -770,6 +770,9 @@ class GQCNN(object):
             output of network
         """
 
+
+        # (manuelli): input_pose_node comes in in pc1 layer, near the end
+
         # conv1_1
         conv1_1h = tf.nn.relu(tf.nn.conv2d(input_im_node, self._weights.conv1_1W, strides=[
                                 1, 1, 1, 1], padding='SAME') + self._weights.conv1_1b)
@@ -787,6 +790,8 @@ class GQCNN(object):
                                 strides=[1, pool1_1_stride,
                                         pool1_1_stride, 1],
                                 padding='SAME')
+
+        # these things aren't used anywhere, we just use pool1_1
         conv1_1_num_nodes = reduce_shape(pool1_1.get_shape())
         conv1_1_flat = tf.reshape(pool1_1, [-1, conv1_1_num_nodes])
 
@@ -807,6 +812,9 @@ class GQCNN(object):
                                 strides=[1, pool1_2_stride,
                                         pool1_2_stride, 1],
                                 padding='SAME')
+
+        # again these aren't used anywhere, we just use pool1_2
+        # this would only be used if we were about to do a fully connected layer
         conv1_2_num_nodes = reduce_shape(pool1_2.get_shape())
         conv1_2_flat = tf.reshape(pool1_2, [-1, conv1_2_num_nodes])
 
@@ -899,14 +907,19 @@ class GQCNN(object):
                 fc3 = tf.nn.relu(tf.matmul(conv2_2_flat, self._weights.fc3W) +
                                 self._weights.fc3b)
 
+
+        # apply dropout if necessary
         # drop fc3 if necessary
         if drop_fc3:
                 fc3 = tf.nn.dropout(fc3, fc3_drop_rate)
 
         # pc1
+        # manuelli: this is where input_pose_node comes in
         pc1 = tf.nn.relu(tf.matmul(input_pose_node, self._weights.pc1W) +
                         self._weights.pc1b)
 
+
+        # whether or not to pass the pose through a more complicated non-linearity
         if self._use_pc2:
                 # pc2
                 pc2 = tf.nn.relu(tf.matmul(pc1, self._weights.pc2W) +
@@ -921,6 +934,8 @@ class GQCNN(object):
                                 tf.matmul(pc1, self._weights.fc4W_pose) +
                                 self._weights.fc4b)
 
+
+        # apply dropout
         # drop fc4 if necessary
         if drop_fc4:
                 fc4 = tf.nn.dropout(fc4, fc4_drop_rate)
