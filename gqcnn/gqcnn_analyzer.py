@@ -97,7 +97,7 @@ class GQCNNAnalyzer(object):
 
         # create output dir
         if not os.path.exists(model_output_dir):
-            os.mkdir(model_output_dir)
+            os.makedirs(model_output_dir)
 
         # load
         logging.info('Loading model %s' %(model_name))
@@ -428,7 +428,7 @@ class GQCNNAnalyzer(object):
                 plt.title('Error on Positive Training Examples', fontsize=self.font_size)
                 plt.xlabel('Abs Prediction Error', fontsize=self.font_size)
                 plt.ylabel('Count', fontsize=self.font_size)
-                figname = os.path.join(model_output_dir, '%s_pos_train_errors_histogram.png' %(model_name))
+                figname = os.path.join(model_output_dir, 'pos_train_errors_histogram.png')
                 plt.savefig(figname, dpi=self.dpi)
 
                 # train negatives
@@ -443,7 +443,7 @@ class GQCNNAnalyzer(object):
                 plt.title('Error on Negative Training Examples', fontsize=self.font_size)
                 plt.xlabel('Abs Prediction Error', fontsize=self.font_size)
                 plt.ylabel('Count', fontsize=self.font_size)
-                figname = os.path.join(model_output_dir, '%s_neg_train_errors_histogram.png' %(model_name))
+                figname = os.path.join(model_output_dir, 'neg_train_errors_histogram.png')
                 plt.savefig(figname, dpi=self.dpi)
 
                 # histogram of training errors
@@ -461,7 +461,7 @@ class GQCNNAnalyzer(object):
                 plt.title('Error on Positive Validation Examples', fontsize=self.font_size)
                 plt.xlabel('Abs Prediction Error', fontsize=self.font_size)
                 plt.ylabel('Count', fontsize=self.font_size)
-                figname = os.path.join(model_output_dir, '%s_pos_val_errors_histogram.png' %(model_name))
+                figname = os.path.join(model_output_dir, 'pos_val_errors_histogram.png')
                 plt.savefig(figname, dpi=self.dpi)
 
                 # train negatives
@@ -476,6 +476,6 @@ class GQCNNAnalyzer(object):
                 plt.title('Error on Negative Validation Examples', fontsize=self.font_size)
                 plt.xlabel('Abs Prediction Error', fontsize=self.font_size)
                 plt.ylabel('Count', fontsize=self.font_size)
-                figname = os.path.join(model_output_dir, '%s_neg_val_errors_histogram.png' %(model_name))
+                figname = os.path.join(model_output_dir, 'neg_val_errors_histogram.png')
                 plt.savefig(figname, dpi=self.dpi)
                 

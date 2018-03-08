@@ -39,7 +39,7 @@ import autolab_core.utils as utils
 from autolab_core import Point
 from perception import BinaryImage, ColorImage, DepthImage, RgbdImage, CameraIntrinsics
 
-from gqcnn import Grasp2D, SuctionPoint2D, ImageGraspSamplerFactory, GQCNN, InputDataMode, GraspQualityFunctionFactory, GQCnnQualityFunction, NoValidGraspsException
+from gqcnn import Grasp2D, SuctionPoint2D, ImageGraspSamplerFactory, GQCNN, InputDataMode, GraspQualityFunctionFactory, GQCnnQualityFunction, NoValidGraspsException, NoAntipodalPairsFoundException
 from gqcnn import Visualizer as vis
 
 FIGSIZE = 16
@@ -313,12 +313,17 @@ class RobustGraspingPolicy(GraspingPolicy):
         """ Selects the grasp with the highest probability of success.
         Can override for alternate policies (e.g. epsilon greedy).
         """
+
+        logging.info('Sorting grasps')
         num_grasps = len(grasps)
+        if num_grasps == 0:
+            raise NoValidGraspsException('Zero grasps')
+
         grasps_and_predictions = zip(np.arange(num_grasps), q_value)
         grasps_and_predictions.sort(key = lambda x : x[1], reverse=True)
         return grasps_and_predictions[0][0]
 
-    def action(self, state):
+    def action(self, state, return_debug_data=False):
         """ Plans the grasp with the highest probability of success on
         the given RGB-D image.
 
@@ -336,6 +341,8 @@ class RobustGraspingPolicy(GraspingPolicy):
         if not isinstance(state, RgbdImageState):
             raise ValueError('Must provide an RGB-D image state.')
 
+        debug_data = dict() # dict to return additional information if requested
+
         # parse state
         rgbd_im = state.rgbd_im
         camera_intr = state.camera_intr
@@ -348,6 +355,11 @@ class RobustGraspingPolicy(GraspingPolicy):
                                             visualize=self.config['vis']['grasp_sampling'],
                                             seed=None)
         num_grasps = len(grasps)
+        if num_grasps == 0:
+            raise NoAntipodalPairsFoundException()
+
+
+        debug_data['grasps'] = grasps
 
         # save if specified
         if self._logging_dir is not None:
@@ -373,6 +385,7 @@ class RobustGraspingPolicy(GraspingPolicy):
         # compute grasp quality
         compute_start = time()
         q_values = self._grasp_quality_fn(state, grasps, params=self._config)
+        debug_data['q_values'] = q_values
         logging.debug('Grasp evaluation took %.3f sec' %(time()-compute_start))
         
         if self.config['vis']['grasp_candidates']:
@@ -393,20 +406,35 @@ class RobustGraspingPolicy(GraspingPolicy):
             vis.title('Sampled grasps')
             vis.show()
 
+
+        logging.info("Generated %d grasps" %(num_grasps))
+
+
         # select grasp
         index = self.select(grasps, q_values)
-        grasp = grasps[index]
-        q_value = q_values[index]
+        top_grasp = grasps[index]
+        top_q_value = q_values[index]
         if self.config['vis']['grasp_plan']:
             vis.figure()
             vis.imshow(rgbd_im.depth,
                        vmin=self.config['vis']['vmin'],
                        vmax=self.config['vis']['vmax'])
-            vis.grasp(grasp, scale=2.0, show_axis=True)
-            vis.title('Best Grasp: d=%.3f, q=%.3f' %(grasp.depth, q_value))
+            vis.grasp(top_grasp, scale=2.0, show_axis=True)
+            vis.title('Best Grasp: d=%.3f, q=%.3f' %(top_grasp.depth, top_q_value))
             vis.show()
 
-        return GraspAction(grasp, q_value, state.rgbd_im.depth)
+
+        if return_debug_data:
+            debug_data['grasp_actions'] = []
+            for idx, grasp in enumerate(grasps):
+                q_value = q_values[idx]
+                grasp_action = GraspAction(grasp, q_value, state.rgbd_im.depth)
+                debug_data['grasp_actions'].append(grasp_action)
+
+        if not return_debug_data:
+            return GraspAction(top_grasp, top_q_value, state.rgbd_im.depth)
+        else:
+            return GraspAction(top_grasp, top_q_value, state.rgbd_im.depth), debug_data
 
 class CrossEntropyRobustGraspingPolicy(GraspingPolicy):
     """ Optimizes a set of grasp candidates in image space using the 
