@@ -732,6 +732,10 @@ class GQCnnQualityFunction(GraspQualityFunction):
         num_grasps = len(grasps)
         depth_im = state.rgbd_im.depth
 
+        # logging.info("gqcnn_im_height: %d" %(gqcnn_im_height))
+        # logging.info("gqcnn_im_width: %d" % (gqcnn_im_width))
+        # logging.info("crop_height: %d" %(self._crop_height))
+
         # allocate tensors
         tensor_start = time()
         image_tensor = np.zeros([num_grasps, gqcnn_im_height, gqcnn_im_width, gqcnn_num_channels])
@@ -875,6 +879,8 @@ class NoMagicQualityFunction(GraspQualityFunction):
         scale = float(gqcnn_im_height) / self._crop_height
         depth_im_scaled = depth_im.resize(scale)
         for i, grasp in enumerate(grasps):
+
+            # aren't x and y flipped here?
             translation = scale * np.array([depth_im.center[0] - grasp.center.data[1],
                                             depth_im.center[1] - grasp.center.data[0]])
             im_tf = depth_im_scaled
