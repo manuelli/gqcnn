@@ -14,9 +14,9 @@ model_dir: /home/manuelli/spartan_grasp/data_volume/dexnet/models/GQ (from RSS 2
 # how are train_batch_size and val_batch_size different?
 # We have to set the size of the network's first layer right, and that can't be changed once the
 # graph is built
-train_batch_size: 64 # can make this larger for a 1080Ti I think
-val_batch_size: 64 # why is this smaller?
-num_epochs: 20     # number of epochs to train for
+train_batch_size: 128 # can make this larger for a 1080Ti I think
+val_batch_size: 128 # why is this smaller?
+num_epochs: 250     # number of epochs to train for
 eval_frequency: 500  # how often to get validation error
 save_frequency: 500  # how often to save output
 vis_frequency: 1000
@@ -36,7 +36,7 @@ loss: sparse
 optimizer: momentum
 train_l2_regularizer: 0.0005
 base_lr: 0.01
-decay_step_multiplier: 0.75   # number of times to go through training datapoints before stepping down decay rate
+decay_step_multiplier: 1   # number of times to go through training datapoints before stepping down decay rate
 decay_rate: 0.95
 momentum_rate: 0.9
 max_training_examples_per_load: 128
@@ -122,7 +122,7 @@ gqcnn_config:
   input_data_mode: tf_image
 
   # prediction batch size, in training this will be overriden by the val_batch_size in the SGDOptimizer's config file
-  batch_size: 64
+  batch_size: 128
 
   # architecture
   architecture:

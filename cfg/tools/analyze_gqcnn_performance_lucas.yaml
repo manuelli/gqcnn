@@ -3,8 +3,10 @@ output_dir: /home/manuelli/spartan_grasp/data_volume/dexnet/sandbox/model_analys
 
 out_rate: 1
 font_size: 15
-dpi: 200
-vis_conv: 1
+dpi: 100
+vis_histograms: 1
+num_bins: 100
+
 
 models:
 #  generated_dataset_adv_synth:
@@ -14,12 +16,12 @@ models:
 #    vis_conv: 1
 #    model_subdir: 20180220-212054_generated_adv_synth_20_epochs/model_eirwjdzguj
 
-  generated_dataset_single_object:
+  20180305-203340_single_object_generated_dataset_50_epochs/model_ewoblwgfhg:
     tag: GQ_CNN_kit_single_object
     type: gqcnn
     split_type: image_wise # valid split-types are image_wise, object_wise, image_stable_pose_wise
     vis_conv: 1
-    model_subdir: 20180301-014715_single_object_generated_dataset_20_epochs/model_ewoblwgfhg
+    # model_subdir: 20180301-014715_single_object_generated_dataset_20_epochs/model_ewoblwgfhg
 #
 #  dex_net_2_large:
 #    tag: dex_net_2_large
